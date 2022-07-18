@@ -1,6 +1,13 @@
 import * as core from '@actions/core'
 import {wait} from './wait'
 
+interface SemanticVersion {
+  major: number;
+  minor: number;
+  patch: number;
+  candidate?: number;
+}
+
 async function run(): Promise<void> {
   try {
     const ms: string = core.getInput('milliseconds')
@@ -15,5 +22,30 @@ async function run(): Promise<void> {
     if (error instanceof Error) core.setFailed(error.message)
   }
 }
+
+
+export function parseTagString (tagString: string) {
+  let regEx = 'v(?<major>[0-9]+)\.(?<minor>[0-9]+)\.(?<patch>[0-9]+)(-RC(?<candidate>[0-9]+))?$'
+  const matches = tagString.match(regEx);
+
+  if (matches) {
+    let versionConstruct: SemanticVersion = {
+      major: 0,
+      minor: 0,
+      patch: 0
+    };
+    
+    if (matches.groups) {
+      versionConstruct.major = Number(matches.groups['major']);
+      versionConstruct.minor = Number(matches.groups['minor']);
+      versionConstruct.patch = Number(matches.groups['patch']);
+      versionConstruct.candidate = Number(matches.groups['candidate']);
+    }
+    return versionConstruct;
+  }
+  
+  return undefined;
+}
+
 
 run()
