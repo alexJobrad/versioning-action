@@ -59,10 +59,10 @@ function run() {
     });
 }
 function parseTagString(tagString) {
-    let regEx = 'v(?<major>[0-9]+)\.(?<minor>[0-9]+)\.(?<patch>[0-9]+)(-RC(?<candidate>[0-9]+))?$';
+    const regEx = '^v(?<major>[0-9]+).(?<minor>[0-9]+).(?<patch>[0-9]+)(-RC(?<candidate>[0-9]+))?$';
     const matches = tagString.match(regEx);
     if (matches) {
-        let versionConstruct = {
+        const versionConstruct = {
             major: 0,
             minor: 0,
             patch: 0
