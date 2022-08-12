@@ -3,8 +3,9 @@ import * as process from 'process'
 import * as cp from 'child_process'
 import * as path from 'path'
 import {expect, test} from '@jest/globals'
-import { parseTagString } from '../src/main'
 import { version } from 'os'
+import { text } from 'stream/consumers'
+
 
 // test('throws invalid number', async () => {
 //   const input = parseInt('foo', 10)
@@ -30,35 +31,3 @@ import { version } from 'os'
 //   console.log(cp.execFileSync(np, [ip], options).toString())
 // })
 
-
-test('parse complete tag string', () => {
-  let versionConstruct = parseTagString('v1.2.3-RC4');
-  expect(versionConstruct).toBeDefined();
-  if (versionConstruct) {
-    expect(versionConstruct.major).toBe(1);
-    expect(versionConstruct.minor).toBe(2);
-    expect(versionConstruct.patch).toBe(3);
-    expect(versionConstruct.candidate).toBe(4);
-  }
-})
-
-test('parse version release tag', () => {
-  let versionConstruct = parseTagString('v16.2.493');
-  expect(versionConstruct).toBeDefined();
-  if (versionConstruct) {
-    expect(versionConstruct.major).toBe(16);
-    expect(versionConstruct.minor).toBe(2);
-    expect(versionConstruct.patch).toBe(493);
-    expect(versionConstruct.candidate).toBeNaN();
-  }
-})
-
-test('not parsing invalid string', () => {
-  let versionConstruct = parseTagString('d1.2.3-RC4');
-  expect(versionConstruct).toBeUndefined();
-})
-
-test('not parsing another invalid string', () => {
-  let versionConstruct = parseTagString('v1.2.3a');
-  expect(versionConstruct).toBeUndefined();
-})
