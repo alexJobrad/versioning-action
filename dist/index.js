@@ -45,18 +45,19 @@ const CommandRunner = (command, ...args) => __awaiter(void 0, void 0, void 0, fu
     let output = '', errors = '';
     let options = {};
     options.silent = true;
-    options.listeners =
-        {
-            stdout: (data) => {
-                output += data.toString();
-            },
-            stderr: (data) => { errors += data.toString(); }
-        };
+    options.listeners = {
+        stdout: (data) => {
+            output += data.toString();
+        },
+        stderr: (data) => {
+            errors += data.toString();
+        }
+    };
     try {
         yield exec.exec(command, args, options);
     }
     catch (err) {
-        console.log("error occured...");
+        console.log('error occured...');
         //core.info(`The command cd '${command} ${args.join(' ')}' failed: ${err}`);
     }
     if (errors !== '') {
@@ -126,11 +127,9 @@ exports.getCommitLog = getCommitLog;
  */
 function getLastVersion(gitTags) {
     return __awaiter(this, void 0, void 0, function* () {
-        const versionRegEx = '^v([0-9]+)\.([0-9]+)\.([0-9]+)$';
+        const versionRegEx = '^v([0-9]+).([0-9]+).([0-9]+)$';
         let lastVersion;
-        lastVersion = gitTags
-            .split('\n')
-            .filter((line) => {
+        lastVersion = gitTags.split('\n').filter(line => {
             if (line.match(versionRegEx)) {
                 return true;
             }
@@ -149,11 +148,9 @@ exports.getLastVersion = getLastVersion;
  */
 function getLastReleaseCandidate(gitTags) {
     return __awaiter(this, void 0, void 0, function* () {
-        const candidateRegEx = '^v([0-9]+)\.([0-9]+)\.([0-9]+)-RC([0-9]+)$';
+        const candidateRegEx = '^v([0-9]+).([0-9]+).([0-9]+)-RC([0-9]+)$';
         let candidateVersion;
-        candidateVersion = gitTags
-            .split('\n')
-            .filter((line) => {
+        candidateVersion = gitTags.split('\n').filter(line => {
             if (line.match(candidateRegEx)) {
                 return true;
             }
@@ -171,10 +168,8 @@ exports.getLastReleaseCandidate = getLastReleaseCandidate;
  * @returns True, if the last version tag is a release candidate.
  */
 function isLastVersionCandidate(gitTags) {
-    let regEx = '^v([0-9]+)\.([0-9]+)\.([0-9]+)(-RC([0-9]+))?$';
-    let lastVersionString = gitTags
-        .split('\n')
-        .filter((line) => {
+    let regEx = '^v([0-9]+).([0-9]+).([0-9]+)(-RC([0-9]+))?$';
+    let lastVersionString = gitTags.split('\n').filter(line => {
         if (line.match(regEx)) {
             return true;
         }
@@ -191,9 +186,9 @@ exports.isLastVersionCandidate = isLastVersionCandidate;
  * @returns String containing the version object
  */
 function createVersionString(version) {
-    let versionString = "v" + version.major + "." + version.minor + "." + version.patch;
+    let versionString = 'v' + version.major + '.' + version.minor + '.' + version.patch;
     if (version.candidate) {
-        return versionString + "-RC" + version.candidate;
+        return versionString + '-RC' + version.candidate;
     }
     return versionString;
 }
@@ -208,11 +203,11 @@ function createNewCandidateVersion(releaseType, gitTags) {
     return __awaiter(this, void 0, void 0, function* () {
         let lastVersionString = yield getLastVersion(gitTags);
         if (!lastVersionString) {
-            lastVersionString = "v0.0.1";
+            lastVersionString = 'v0.0.1';
         }
         let lastCandidateString = yield getLastReleaseCandidate(gitTags);
         if (!lastCandidateString) {
-            lastCandidateString = "v0.0.1-RC1";
+            lastCandidateString = 'v0.0.1-RC1';
         }
         const lastVersion = parseTagString(lastVersionString);
         const lastCandidate = parseTagString(lastCandidateString);
@@ -262,7 +257,7 @@ exports.createNewCandidateVersion = createNewCandidateVersion;
 function createNewVersion(gitTags) {
     return __awaiter(this, void 0, void 0, function* () {
         if (!isLastVersionCandidate(gitTags)) {
-            return "undefined";
+            return 'undefined';
         }
         let lastReleaseCandidate = parseTagString(yield getLastReleaseCandidate(gitTags));
         if (lastReleaseCandidate === null || lastReleaseCandidate === void 0 ? void 0 : lastReleaseCandidate.candidate) {
@@ -323,12 +318,12 @@ function run() {
         // don't delete these, yet, maybe, we need them in the main.ts later...
         const gitTags = yield (0, CommandRunner_1.CommandRunner)('git tag --list --sort=-version:refname');
         // const gitTags = await CommandRunner('git tag --list --sort=-committerdate')
-        core.debug("I found following git tags: " + gitTags);
+        core.debug('I found following git tags: ' + gitTags);
         // const newVersionString = createNewCandidateVersion('patch', gitTags)
         try {
             const releaseType = core.getInput('releaseType');
             const newVersion = yield performRelease(releaseType, gitTags);
-            if (newVersion == "undefined") {
+            if (newVersion == 'undefined') {
                 core.setFailed("Couldn't create release!");
             }
             core.setOutput('newVersion', newVersion);

@@ -1,6 +1,5 @@
-import { expect, test } from '@jest/globals'
-import { CommandRunner } from '../src/CommandRunner'
-
+import {expect, test} from '@jest/globals'
+import {CommandRunner} from '../src/CommandRunner'
 
 test('dummy', () => {
   console.log('test')
