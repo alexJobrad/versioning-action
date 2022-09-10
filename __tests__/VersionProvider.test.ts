@@ -1,7 +1,7 @@
 import {expect, test} from '@jest/globals'
-import { text } from 'stream/consumers';
-import { getLastVersion, getLastReleaseCandidate, createNewCandidateVersion, parseTagString } from '../src/VersionProvider'
+import { getLastVersion, getLastReleaseCandidate, createNewCandidateVersion, parseTagString, createNewVersion } from '../src/VersionProvider'
 
+/** parseTagString */
 test('parse complete tag string', () => {
   let versionConstruct = parseTagString('v1.2.3-RC4');
   expect(versionConstruct).toBeDefined();
@@ -34,6 +34,7 @@ test('not parsing another invalid string', () => {
     expect(versionConstruct).toBeUndefined();
   })
   
+/** getLastVersion */
 
 test('get last version', async () => {
     const gitTags = "v1.112.43-RC45\n\
@@ -51,6 +52,8 @@ production"
 })
 
 
+/** getLastReleaseCandidate */
+
 test('get last release candidate', async () => {
     const gitTags = "v1.112.43-RC45\n\
 v1.0.1-RC1\n\
@@ -66,6 +69,7 @@ production"
   })
 })
 
+/** createNewCandidateVersion */
 
 test('create new patch level release candidate', async () => {
   const gitTags = "v1.112.43-RC45\nv1.112.43"
@@ -128,4 +132,20 @@ test('no version available', async () => {
     createNewCandidateVersion('minor', gitTags).then((data) => {
         expect(data).toBe("v1.1.0-RC2")
     })
+})
+
+/** createNewRelease */
+
+test('create new release from candidate', async () => {
+  const gitTags = "v1.3.0-RC1\nv1.2.3-RC4"
+  createNewVersion(gitTags).then(data => {
+    expect(data).toBe("v1.3.0")
+  })
+})
+
+test('create new release: order of version tags matters, not numbers', async () => {
+  const gitTags = "v1.1.0-RC1\nv1.2.3-RC4"
+  createNewVersion(gitTags).then(data => {
+    expect(data).toBe("v1.1.0")
+  })
 })

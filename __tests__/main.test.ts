@@ -1,11 +1,5 @@
-import {wait} from '../src/wait'
-import * as process from 'process'
-import * as cp from 'child_process'
-import * as path from 'path'
 import {expect, test} from '@jest/globals'
-import { version } from 'os'
-import { text } from 'stream/consumers'
-
+import { performRelease } from '../src/main'
 
 // test('throws invalid number', async () => {
 //   const input = parseInt('foo', 10)
@@ -31,3 +25,116 @@ import { text } from 'stream/consumers'
 //   console.log(cp.execFileSync(np, [ip], options).toString())
 // })
 
+test('test releasing the last candidate', async () => {
+    const gitTags = "v1.112.43-RC45\n\
+v1.0.1-RC1\n\
+v1.0.0-RC2\n\
+v1.0.0-RC1\n\
+v1.0.0\n\
+v0.0.34\n\
+staging\n\
+production"
+    performRelease('release', gitTags).then(data => {
+        expect(data).toBe("v1.112.43")
+    })
+})
+
+test('test creating a new minor candidate', async () => {
+    const gitTags = "v1.112.43-RC45\n\
+v1.0.1-RC1\n\
+v1.0.0-RC2\n\
+v1.0.0-RC1\n\
+v1.0.0\n\
+v0.0.34\n\
+staging\n\
+production"
+    performRelease('minor', gitTags).then(data => {
+        expect(data).toBe("v1.112.43-RC46")
+    })
+})
+
+test('test creating a new major candidate', async () => {
+    const gitTags = "v1.112.43-RC45\n\
+v1.0.1-RC1\n\
+v1.0.0-RC2\n\
+v1.0.0-RC1\n\
+v1.0.0\n\
+v0.0.34\n\
+staging\n\
+production"
+    performRelease('major', gitTags).then(data => {
+        expect(data).toBe("v2.0.0-RC1")
+    })
+})
+
+test('test creating a new minor candidate', async () => {
+    const gitTags = "v1.0.1-RC2\n\
+v1.0.1-RC1\n\
+v1.0.0-RC2\n\
+v1.0.0-RC1\n\
+v1.0.0\n\
+v0.0.34\n\
+staging\n\
+production"
+    performRelease('minor', gitTags).then(data => {
+        expect(data).toBe("v1.1.0-RC1")
+    })
+})
+
+test('test creating a new patch candidate', async () => {
+    const gitTags = "v1.0.1-RC2\n\
+v1.0.1-RC1\n\
+v1.0.0-RC2\n\
+v1.0.0-RC1\n\
+v1.0.0\n\
+v0.0.34\n\
+staging\n\
+production"
+    performRelease('patch', gitTags).then(data => {
+        expect(data).toBe("v1.0.1-RC3")
+    })
+})
+
+
+test('test creating a new patch candidate', async () => {
+    const gitTags = "v1.0.1\n\
+v1.0.1-RC1\n\
+v1.0.0-RC2\n\
+v1.0.0-RC1\n\
+v1.0.0\n\
+v0.0.34\n\
+staging\n\
+production"
+    performRelease('patch', gitTags).then(data => {
+        expect(data).toBe("v1.0.2-RC1")
+    })
+})
+
+test('test creating a new patch candidate', async () => {
+    const gitTags = "v1.0.1\n\
+v1.0.1-RC1\n\
+v1.0.0-RC2\n\
+v1.0.0-RC1\n\
+v1.0.0\n\
+v0.0.34\n\
+staging\n\
+production"
+    performRelease('patch', gitTags).then(data => {
+        expect(data).toBe("v1.0.2-RC1")
+    })
+})
+
+
+test('test creating a release from a release - should fail', async () => {
+    const gitTags = "v1.0.1\n\
+v1.0.1-RC1\n\
+v1.0.0-RC2\n\
+v1.0.0-RC1\n\
+v1.0.0\n\
+v0.0.34\n\
+staging\n\
+production"
+    performRelease('release', gitTags).then(data => {
+        expect(data).toBe("undefined")
+    })
+})
