@@ -1,11 +1,11 @@
-name: 'Your name here'
-description: 'Provide a description here'
+name: 'Semantic versioning action'
+description: 'This action creates a new semantic version based on git tags and desired release type.'
 author: 'Your name or organization here'
 inputs:
-  milliseconds: # change this
+  releaseType:
     required: true
-    description: 'input description here'
-    default: 'default value if applicable'
+    description: 'what kind of release to perform'
+    default: 'release'
 runs:
   using: 'node16'
   main: 'dist/index.js'
