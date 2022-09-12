@@ -6,6 +6,9 @@ inputs:
     required: true
     description: 'what kind of release to perform'
     default: 'release'
+outputs:
+  newVersion:
+    description: "new version"
 runs:
   using: 'node16'
   main: 'dist/index.js'

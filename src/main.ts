@@ -15,6 +15,8 @@ async function run(): Promise<void> {
     const releaseType: ReleaseType = core.getInput('releaseType') as ReleaseType
     const newVersion = await performRelease(releaseType, gitTags)
 
+    core.debug("new version string: " + newVersion)
+
     if (newVersion == 'undefined') {
       core.setFailed("Couldn't create release!")
     }
