@@ -77,6 +77,29 @@ exports.CommandRunner = CommandRunner;
 
 "use strict";
 
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -88,6 +111,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.createNewVersion = exports.createNewCandidateVersion = exports.createVersionString = exports.isLastVersionCandidate = exports.getLastReleaseCandidate = exports.getLastVersion = exports.getCommitLog = exports.parseTagString = void 0;
+const core = __importStar(__nccwpck_require__(186));
 const CommandRunner_1 = __nccwpck_require__(949);
 /**
  * Parses a tag string and return a SemanticVersion
@@ -203,6 +227,7 @@ exports.createVersionString = createVersionString;
 function createNewCandidateVersion(releaseType, gitTags) {
     return __awaiter(this, void 0, void 0, function* () {
         let lastVersionString = yield getLastVersion(gitTags);
+        core.info('last version string found in git tags: ' + lastVersionString);
         if (!lastVersionString) {
             lastVersionString = 'v0.0.1';
         }
@@ -328,7 +353,7 @@ function run() {
         try {
             const releaseType = core.getInput('releaseType');
             const newVersion = yield performRelease(releaseType, gitTags);
-            core.debug("new version string: " + newVersion);
+            core.info("new version string: " + newVersion);
             if (newVersion == 'undefined') {
                 core.setFailed("Couldn't create release!");
             }

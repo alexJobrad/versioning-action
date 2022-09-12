@@ -1,3 +1,4 @@
+import * as core from '@actions/core'
 import {CommandRunner} from './CommandRunner'
 
 interface SemanticVersion {
@@ -127,6 +128,7 @@ export async function createNewCandidateVersion(
   gitTags: string
 ): Promise<string> {
   let lastVersionString: string = await getLastVersion(gitTags)
+  core.info('last version string found in git tags: ' + lastVersionString)
   if (!lastVersionString) {
     lastVersionString = 'v0.0.1'
   }
