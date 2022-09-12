@@ -1,3 +1,4 @@
+import * as core from '@actions/core'
 import * as exec from '@actions/exec'
 
 export const CommandRunner = async (
@@ -21,12 +22,12 @@ export const CommandRunner = async (
     await exec.exec(command, args, options)
   } catch (err) {
     console.log('error occured...')
-    //core.info(`The command cd '${command} ${args.join(' ')}' failed: ${err}`);
+    core.info(`The command cd '${command} ${args.join(' ')}' failed: ${err}`);
   }
 
   if (errors !== '') {
     console.log(errors)
-    //core.info(`stderr: ${errors}`);
+    core.info(`stderr: ${errors}`);
   }
 
   return output

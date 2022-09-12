@@ -40,11 +40,12 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.CommandRunner = void 0;
+const core = __importStar(__nccwpck_require__(186));
 const exec = __importStar(__nccwpck_require__(514));
 const CommandRunner = (command, ...args) => __awaiter(void 0, void 0, void 0, function* () {
     let output = '', errors = '';
     let options = {};
-    options.silent = true;
+    options.silent = false;
     options.listeners = {
         stdout: (data) => {
             output += data.toString();
@@ -58,11 +59,11 @@ const CommandRunner = (command, ...args) => __awaiter(void 0, void 0, void 0, fu
     }
     catch (err) {
         console.log('error occured...');
-        //core.info(`The command cd '${command} ${args.join(' ')}' failed: ${err}`);
+        core.info(`The command cd '${command} ${args.join(' ')}' failed: ${err}`);
     }
     if (errors !== '') {
         console.log(errors);
-        //core.info(`stderr: ${errors}`);
+        core.info(`stderr: ${errors}`);
     }
     return output;
 });
@@ -315,17 +316,23 @@ const CommandRunner_1 = __nccwpck_require__(949);
 const VersionProvider_1 = __nccwpck_require__(274);
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
+        core.info("starting versioning action....");
         // don't delete these, yet, maybe, we need them in the main.ts later...
         const gitTags = yield (0, CommandRunner_1.CommandRunner)('git tag --list --sort=-version:refname');
         // const gitTags = await CommandRunner('git tag --list --sort=-committerdate')
         core.debug('I found following git tags: ' + gitTags);
+        core.info('I found following git tags: ' + gitTags);
+        let currentDir = yield (0, CommandRunner_1.CommandRunner)("pwd");
+        core.info('current directory: ' + currentDir);
         // const newVersionString = createNewCandidateVersion('patch', gitTags)
         try {
             const releaseType = core.getInput('releaseType');
             const newVersion = yield performRelease(releaseType, gitTags);
+            core.debug("new version string: " + newVersion);
             if (newVersion == 'undefined') {
                 core.setFailed("Couldn't create release!");
             }
+            core.setOutput('gitTags', gitTags);
             core.setOutput('newVersion', newVersion);
         }
         catch (error) {
