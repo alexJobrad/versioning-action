@@ -20,6 +20,7 @@ async function run(): Promise<void> {
     if (newVersion == 'undefined') {
       core.setFailed("Couldn't create release!")
     }
+    core.setOutput('gitTags', gitTags)
     core.setOutput('newVersion', newVersion)
   } catch (error) {
     if (error instanceof Error) core.setFailed(error.message)

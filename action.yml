@@ -9,6 +9,8 @@ inputs:
 outputs:
   newVersion:
     description: "new version"
+  gitTags:
+    description: "list of git tags found in the repo"
 runs:
   using: 'node16'
   main: 'dist/index.js'
