@@ -5,12 +5,14 @@ import {createNewCandidateVersion, createNewVersion} from './VersionProvider'
 type ReleaseType = 'major' | 'minor' | 'patch' | 'release'
 
 async function run(): Promise<void> {
+  core.info("starting versioning action....")
   // don't delete these, yet, maybe, we need them in the main.ts later...
   const gitTags = await CommandRunner('git tag --list --sort=-version:refname')
   // const gitTags = await CommandRunner('git tag --list --sort=-committerdate')
   core.debug('I found following git tags: ' + gitTags)
   core.info('I found following git tags: ' + gitTags)
-  CommandRunner("pwd").then(data => core.info('current directory: ' + data))
+  let currentDir = await CommandRunner("pwd")
+  core.info('current directory: ' + currentDir)
   // const newVersionString = createNewCandidateVersion('patch', gitTags)
 
   try {
