@@ -9,6 +9,7 @@ async function run(): Promise<void> {
   const gitTags = await CommandRunner('git tag --list --sort=-version:refname')
   // const gitTags = await CommandRunner('git tag --list --sort=-committerdate')
   core.debug('I found following git tags: ' + gitTags)
+  console.log('I found following git tags: ' + gitTags)
   // const newVersionString = createNewCandidateVersion('patch', gitTags)
 
   try {
