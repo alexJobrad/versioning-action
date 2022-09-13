@@ -9,10 +9,10 @@ async function run(): Promise<void> {
   // don't delete these, yet, maybe, we need them in the main.ts later...
   const gitTags = await CommandRunner('git tag --list --sort=-version:refname')
   // const gitTags = await CommandRunner('git tag --list --sort=-committerdate')
-  core.debug('I found following git tags: ' + gitTags)
-  core.info('I found following git tags: ' + gitTags)
+  // core.debug('I found following git tags: ' + gitTags)
+  // core.info('I found following git tags: ' + gitTags)
   let currentDir = await CommandRunner("pwd")
-  core.info('current directory: ' + currentDir)
+  // core.info('current directory: ' + currentDir)
   // const newVersionString = createNewCandidateVersion('patch', gitTags)
 
   try {
@@ -24,7 +24,6 @@ async function run(): Promise<void> {
     if (newVersion == 'undefined') {
       core.setFailed("Couldn't create release!")
     }
-    core.setOutput('gitTags', gitTags)
     core.setOutput('newVersion', newVersion)
   } catch (error) {
     if (error instanceof Error) core.setFailed(error.message)
