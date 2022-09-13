@@ -45,7 +45,7 @@ const exec = __importStar(__nccwpck_require__(514));
 const CommandRunner = (command, ...args) => __awaiter(void 0, void 0, void 0, function* () {
     let output = '', errors = '';
     let options = {};
-    options.silent = false;
+    options.silent = true;
     options.listeners = {
         stdout: (data) => {
             output += data.toString();
@@ -58,11 +58,9 @@ const CommandRunner = (command, ...args) => __awaiter(void 0, void 0, void 0, fu
         yield exec.exec(command, args, options);
     }
     catch (err) {
-        console.log('error occured...');
         core.info(`The command cd '${command} ${args.join(' ')}' failed: ${err}`);
     }
     if (errors !== '') {
-        console.log(errors);
         core.info(`stderr: ${errors}`);
     }
     return output;
@@ -77,29 +75,6 @@ exports.CommandRunner = CommandRunner;
 
 "use strict";
 
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -111,7 +86,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.createNewVersion = exports.createNewCandidateVersion = exports.createVersionString = exports.isLastVersionCandidate = exports.getLastReleaseCandidate = exports.getLastVersion = exports.getCommitLog = exports.parseTagString = void 0;
-const core = __importStar(__nccwpck_require__(186));
 const CommandRunner_1 = __nccwpck_require__(949);
 /**
  * Parses a tag string and return a SemanticVersion
@@ -227,11 +201,14 @@ exports.createVersionString = createVersionString;
 function createNewCandidateVersion(releaseType, gitTags) {
     return __awaiter(this, void 0, void 0, function* () {
         let lastVersionString = yield getLastVersion(gitTags);
-        core.info('last version string found in git tags: ' + lastVersionString);
+        // core.info('last version string found in git tags: ' + lastVersionString)
+        // console.log('last version string found in git tags: ' + lastVersionString)
         if (!lastVersionString) {
             lastVersionString = 'v0.0.1';
         }
         let lastCandidateString = yield getLastReleaseCandidate(gitTags);
+        // core.info('last release candidate found: ' + lastCandidateString)
+        // console.log('last release candidate found: ' + lastCandidateString)
         if (!lastCandidateString) {
             lastCandidateString = 'v0.0.1-RC1';
         }
@@ -264,12 +241,14 @@ function createNewCandidateVersion(releaseType, gitTags) {
         }
         if (isLastVersionCandidate(gitTags)) {
             if (lastVersion[releaseType] < lastCandidate[releaseType]) {
+                // console.log("updating release candidate")
                 newVersion.major = lastCandidate.major;
                 newVersion.minor = lastCandidate.minor;
                 newVersion.patch = lastCandidate.patch;
                 newVersion.candidate = lastCandidate.candidate + 1;
             }
             else {
+                // console.log("creating new version from last version")
                 createVersionFromLastVersion();
             }
         }

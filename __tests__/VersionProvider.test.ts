@@ -134,6 +134,13 @@ test('no version available', async () => {
   })
 })
 
+test('no version available', async () => {
+  const gitTags = 'v1.2.4-RC1\nv1.2.3-RC4'
+  createNewCandidateVersion('patch', gitTags).then(data => {
+    expect(data).toBe('v1.2.4-RC2')
+  })
+})
+
 /** createNewRelease */
 
 test('create new release from candidate', async () => {

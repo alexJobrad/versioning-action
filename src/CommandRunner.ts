@@ -8,7 +8,7 @@ export const CommandRunner = async (
   let output = '',
     errors = ''
   let options: exec.ExecOptions = {}
-  options.silent = false
+  options.silent = true
   options.listeners = {
     stdout: (data: any) => {
       output += data.toString()
@@ -21,12 +21,10 @@ export const CommandRunner = async (
   try {
     await exec.exec(command, args, options)
   } catch (err) {
-    console.log('error occured...')
     core.info(`The command cd '${command} ${args.join(' ')}' failed: ${err}`);
   }
 
   if (errors !== '') {
-    console.log(errors)
     core.info(`stderr: ${errors}`);
   }
 

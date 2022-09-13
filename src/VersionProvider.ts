@@ -128,11 +128,14 @@ export async function createNewCandidateVersion(
   gitTags: string
 ): Promise<string> {
   let lastVersionString: string = await getLastVersion(gitTags)
-  core.info('last version string found in git tags: ' + lastVersionString)
+  // core.info('last version string found in git tags: ' + lastVersionString)
+  // console.log('last version string found in git tags: ' + lastVersionString)
   if (!lastVersionString) {
     lastVersionString = 'v0.0.1'
   }
   let lastCandidateString: string = await getLastReleaseCandidate(gitTags)
+  // core.info('last release candidate found: ' + lastCandidateString)
+  // console.log('last release candidate found: ' + lastCandidateString)
   if (!lastCandidateString) {
     lastCandidateString = 'v0.0.1-RC1'
   }
@@ -169,11 +172,13 @@ export async function createNewCandidateVersion(
 
   if (isLastVersionCandidate(gitTags)) {
     if (lastVersion![releaseType] < lastCandidate![releaseType]) {
+      // console.log("updating release candidate")
       newVersion.major = lastCandidate!.major
       newVersion.minor = lastCandidate!.minor
       newVersion.patch = lastCandidate!.patch
       newVersion.candidate = lastCandidate!.candidate! + 1
     } else {
+      // console.log("creating new version from last version")
       createVersionFromLastVersion()
     }
   } else {
