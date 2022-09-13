@@ -324,10 +324,10 @@ function run() {
         // don't delete these, yet, maybe, we need them in the main.ts later...
         const gitTags = yield (0, CommandRunner_1.CommandRunner)('git tag --list --sort=-version:refname');
         // const gitTags = await CommandRunner('git tag --list --sort=-committerdate')
-        core.debug('I found following git tags: ' + gitTags);
-        core.info('I found following git tags: ' + gitTags);
+        // core.debug('I found following git tags: ' + gitTags)
+        // core.info('I found following git tags: ' + gitTags)
         let currentDir = yield (0, CommandRunner_1.CommandRunner)("pwd");
-        core.info('current directory: ' + currentDir);
+        // core.info('current directory: ' + currentDir)
         // const newVersionString = createNewCandidateVersion('patch', gitTags)
         try {
             const releaseType = core.getInput('releaseType');
@@ -336,7 +336,6 @@ function run() {
             if (newVersion == 'undefined') {
                 core.setFailed("Couldn't create release!");
             }
-            core.setOutput('gitTags', gitTags);
             core.setOutput('newVersion', newVersion);
         }
         catch (error) {
