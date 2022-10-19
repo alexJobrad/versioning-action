@@ -1,12 +1,12 @@
 import {expect, test} from '@jest/globals'
-import {CommandRunner} from '../src/CommandRunner'
+import {commandRunner} from '../src/command-runner'
 
 test('dummy', () => {
   console.log('test')
 })
 
 // test('run command test', async () => {
-//     return CommandRunner('echo hallo').then(data => {
+//     return commandRunner('echo hallo').then(data => {
 //       console.log("data: " + data);
 //       expect(data).toBe("hallo");
 //     })
@@ -16,6 +16,6 @@ test('dummy', () => {
 //   })
 
 // test('fails running non-existing command', async () => {
-//     const returnValue = await CommandRunner('asdfijkjdf')
+//     const returnValue = await commandRunner('asdfijkjdf')
 //     console.log(returnValue)
 // })

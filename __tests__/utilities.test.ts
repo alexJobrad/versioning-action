@@ -5,7 +5,7 @@ import {
   createNewCandidateVersion,
   parseTagString,
   createNewVersion
-} from '../src/VersionProvider'
+} from '../src/utilities'
 
 /** parseTagString */
 test('parse complete tag string', () => {
@@ -53,9 +53,8 @@ v0.0.34\n\
 staging\n\
 production'
 
-  const commitLog = getLastVersion(gitTags).then(data => {
-    expect(data).toBe('v1.0.0')
-  })
+  const lastVersion = getLastVersion(gitTags)
+  expect(lastVersion).toBe('v1.0.0')
 })
 
 /** getLastReleaseCandidate */
@@ -71,88 +70,76 @@ v0.0.34\n\
 staging\n\
 production'
 
-  const commitLog = getLastReleaseCandidate(gitTags).then(data => {
-    expect(data).toBe('v1.112.43-RC45')
-  })
+  const lastRC = getLastReleaseCandidate(gitTags)
+  expect(lastRC).toBe('v1.112.43-RC45')
 })
 
 /** createNewCandidateVersion */
 
 test('create new patch level release candidate', async () => {
   const gitTags = 'v1.112.43-RC45\nv1.112.43'
-  createNewCandidateVersion('patch', gitTags).then(data => {
-    expect(data).toBe('v1.112.44-RC1')
-  })
+  const version = createNewCandidateVersion('patch', gitTags)
+  expect(version).toBe('v1.112.44-RC1')
 })
 
 test('create new patch level release candidate from previous RC', async () => {
   const gitTags = 'v1.112.44-RC45\nv1.112.43'
-  createNewCandidateVersion('patch', gitTags).then(data => {
-    expect(data).toBe('v1.112.44-RC46')
-  })
+  const version = createNewCandidateVersion('patch', gitTags)
+  expect(version).toBe('v1.112.44-RC46')
 })
 
 test('create new minor level release candidate', async () => {
   const gitTags = 'v1.112.44-RC45\nv1.112.43'
-  createNewCandidateVersion('minor', gitTags).then(data => {
-    expect(data).toBe('v1.113.0-RC1')
-  })
+  const version = createNewCandidateVersion('minor', gitTags)
+  expect(version).toBe('v1.113.0-RC1')
 })
 
 test('create new minor level release candidate', async () => {
   const gitTags = 'v1.112.44-RC45\nv1.112.43'
-  createNewCandidateVersion('minor', gitTags).then(data => {
-    expect(data).toBe('v1.113.0-RC1')
-  })
+  const version = createNewCandidateVersion('minor', gitTags)
+  expect(version).toBe('v1.113.0-RC1') 
 })
 
 test('create new major level release candidate', async () => {
   const gitTags = 'v1.112.44-RC45\nv1.112.43'
-  createNewCandidateVersion('major', gitTags).then(data => {
-    expect(data).toBe('v2.0.0-RC1')
-  })
+  const version = createNewCandidateVersion('major', gitTags)
+  expect(version).toBe('v2.0.0-RC1')
 })
 
 test('create new candidate from version string', async () => {
   const gitTags = 'v1.112.44\nv1.112.43\nv0.0.1-RC1'
-  createNewCandidateVersion('minor', gitTags).then(data => {
-    expect(data).toBe('v1.113.0-RC1')
-  })
+  const version = createNewCandidateVersion('minor', gitTags)
+  expect(version).toBe('v1.113.0-RC1')
 })
 
 test('no release candidate available', async () => {
   const gitTags = 'v1.1.1\nv1.1.0'
-  createNewCandidateVersion('patch', gitTags).then(data => {
-    expect(data).toBe('v1.1.2-RC1')
-  })
+  const version = createNewCandidateVersion('patch', gitTags)
+  expect(version).toBe('v1.1.2-RC1')
 })
 
 test('no version available', async () => {
   const gitTags = 'v1.1.0-RC1\nv1.2.3-RC4'
-  createNewCandidateVersion('minor', gitTags).then(data => {
-    expect(data).toBe('v1.1.0-RC2')
-  })
+  const version = createNewCandidateVersion('minor', gitTags)
+  expect(version).toBe('v1.1.0-RC2')
 })
 
 test('no version available', async () => {
   const gitTags = 'v1.2.4-RC1\nv1.2.3-RC4'
-  createNewCandidateVersion('patch', gitTags).then(data => {
-    expect(data).toBe('v1.2.4-RC2')
-  })
+  const version = createNewCandidateVersion('patch', gitTags)
+  expect(version).toBe('v1.2.4-RC2')
 })
 
 /** createNewRelease */
 
 test('create new release from candidate', async () => {
   const gitTags = 'v1.3.0-RC1\nv1.2.3-RC4'
-  createNewVersion(gitTags).then(data => {
-    expect(data).toBe('v1.3.0')
-  })
+  const version = createNewVersion(gitTags)
+  expect(version).toBe('v1.3.0')
 })
 
 test('create new release: order of version tags matters, not numbers', async () => {
   const gitTags = 'v1.1.0-RC1\nv1.2.3-RC4'
-  createNewVersion(gitTags).then(data => {
-    expect(data).toBe('v1.1.0')
-  })
+  const version = createNewVersion(gitTags)
+  expect(version).toBe('v1.1.0')
 })

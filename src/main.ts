@@ -1,17 +1,17 @@
 import * as core from '@actions/core'
-import {CommandRunner} from './CommandRunner'
-import {createNewCandidateVersion, createNewVersion} from './VersionProvider'
+import {commandRunner} from './command-runner'
+import {createNewCandidateVersion, createNewVersion} from './utilities'
 
 type ReleaseType = 'major' | 'minor' | 'patch' | 'release'
 
 async function run(): Promise<void> {
-  core.info("starting versioning action....")
+  core.info('starting versioning action....')
   // don't delete these, yet, maybe, we need them in the main.ts later...
-  const gitTags = await CommandRunner('git tag --list --sort=-version:refname')
+  const gitTags = await commandRunner('git tag --list --sort=-version:refname')
   // const gitTags = await CommandRunner('git tag --list --sort=-committerdate')
   // core.debug('I found following git tags: ' + gitTags)
   // core.info('I found following git tags: ' + gitTags)
-  let currentDir = await CommandRunner("pwd")
+  // let currentDir = await commandRunner('pwd')
   // core.info('current directory: ' + currentDir)
   // const newVersionString = createNewCandidateVersion('patch', gitTags)
 
@@ -19,9 +19,9 @@ async function run(): Promise<void> {
     const releaseType: ReleaseType = core.getInput('releaseType') as ReleaseType
     const newVersion = await performRelease(releaseType, gitTags)
 
-    core.info("new version string: " + newVersion)
+    core.info('new version string: ${newVersion}')
 
-    if (newVersion == 'undefined') {
+    if (newVersion === 'undefined') {
       core.setFailed("Couldn't create release!")
     }
     core.setOutput('newVersion', newVersion)

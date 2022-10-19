@@ -1,5 +1,4 @@
-import * as core from '@actions/core'
-import {CommandRunner} from './CommandRunner'
+import {commandRunner} from './command-runner'
 
 interface SemanticVersion {
   major: number
@@ -37,7 +36,7 @@ export function parseTagString(tagString: string): SemanticVersion | undefined {
 }
 
 export async function getCommitLog(): Promise<string> {
-  let gitVersionPromise = CommandRunner('git log --pretty="format: %H | %D"')
+  const gitVersionPromise = commandRunner('git log --pretty="format: %H | %D"')
   return gitVersionPromise
 }
 
@@ -46,18 +45,12 @@ export async function getCommitLog(): Promise<string> {
  * @param gitTags String containing all git tags.
  * @returns The last release version as SemanticVersion object.
  */
-export async function getLastVersion(gitTags: string): Promise<string> {
+export function getLastVersion(gitTags: string): string {
   const versionRegEx = '^v([0-9]+).([0-9]+).([0-9]+)$'
 
-  let lastVersion: string
-
-  lastVersion = gitTags.split('\n').filter(line => {
-    if (line.match(versionRegEx)) {
-      return true
-    } else {
-      return false
-    }
-  })[0]
+  const lastVersion = gitTags
+    .split('\n')
+    .filter(line => line.match(versionRegEx))[0]
 
   return lastVersion
 }
@@ -67,20 +60,12 @@ export async function getLastVersion(gitTags: string): Promise<string> {
  * @param gitTags String containing all git tags.
  * @returns The new release candidate as SemanticVersion object.
  */
-export async function getLastReleaseCandidate(
-  gitTags: string
-): Promise<string> {
+export function getLastReleaseCandidate(gitTags: string): string {
   const candidateRegEx = '^v([0-9]+).([0-9]+).([0-9]+)-RC([0-9]+)$'
 
-  let candidateVersion: string
-
-  candidateVersion = gitTags.split('\n').filter(line => {
-    if (line.match(candidateRegEx)) {
-      return true
-    } else {
-      return false
-    }
-  })[0]
+  const candidateVersion = gitTags
+    .split('\n')
+    .filter(line => line.match(candidateRegEx))[0]
 
   return candidateVersion
 }
@@ -91,13 +76,13 @@ export async function getLastReleaseCandidate(
  * @returns True, if the last version tag is a release candidate.
  */
 export function isLastVersionCandidate(gitTags: string): boolean {
-  let regEx = '^v([0-9]+).([0-9]+).([0-9]+)(-RC([0-9]+))?$'
-  let lastVersionString = gitTags.split('\n').filter(line => {
-    if (line.match(regEx)) {
-      return true
-    }
-  })[0]
-  if (lastVersionString != undefined && lastVersionString.includes('RC')) {
+  const regEx = '^v([0-9]+).([0-9]+).([0-9]+)(-RC([0-9]+))?$'
+
+  const lastVersionString = gitTags
+    .split('\n')
+    .filter(line => line.match(regEx))[0]
+
+  if (lastVersionString !== undefined && lastVersionString.includes('RC')) {
     return true
   }
   return false
@@ -109,10 +94,15 @@ export function isLastVersionCandidate(gitTags: string): boolean {
  * @returns String containing the version object
  */
 export function createVersionString(version: SemanticVersion): string {
-  let versionString =
-    'v' + version.major + '.' + version.minor + '.' + version.patch
+  const versionString = 'v'.concat(
+    String(version.major),
+    '.',
+    String(version.minor),
+    '.',
+    String(version.patch)
+  )
   if (version.candidate) {
-    return versionString + '-RC' + version.candidate
+    return ''.concat(versionString, '-RC', String(version.candidate))
   }
   return versionString
 }
@@ -123,19 +113,15 @@ export function createVersionString(version: SemanticVersion): string {
  * @param gitTags String containing all git tags.
  * @returns
  */
-export async function createNewCandidateVersion(
+export function createNewCandidateVersion(
   releaseType: 'major' | 'minor' | 'patch',
   gitTags: string
-): Promise<string> {
-  let lastVersionString: string = await getLastVersion(gitTags)
-  // core.info('last version string found in git tags: ' + lastVersionString)
-  // console.log('last version string found in git tags: ' + lastVersionString)
+): string {
+  let lastVersionString: string = getLastVersion(gitTags)
   if (!lastVersionString) {
     lastVersionString = 'v0.0.1'
   }
-  let lastCandidateString: string = await getLastReleaseCandidate(gitTags)
-  // core.info('last release candidate found: ' + lastCandidateString)
-  // console.log('last release candidate found: ' + lastCandidateString)
+  let lastCandidateString: string = getLastReleaseCandidate(gitTags)
   if (!lastCandidateString) {
     lastCandidateString = 'v0.0.1-RC1'
   }
@@ -143,26 +129,29 @@ export async function createNewCandidateVersion(
   const lastVersion = parseTagString(lastVersionString)
   const lastCandidate = parseTagString(lastCandidateString)
 
-  let newVersion: SemanticVersion = {
+  const newVersion: SemanticVersion = {
     major: 0,
     minor: 0,
     patch: 1
   }
 
-  function createVersionFromLastVersion() {
+  function createVersionFromLastVersion(): void {
     switch (releaseType) {
       case 'patch':
-        newVersion.major = lastVersion!.major
-        newVersion.minor = lastVersion!.minor
-        newVersion.patch = lastVersion!.patch + 1
+        newVersion.major = lastVersion?.major ?? 0
+        newVersion.minor = lastVersion?.minor ?? 0
+        newVersion.patch =
+          lastVersion && lastVersion.patch ? lastVersion.patch + 1 : 1
         break
       case 'minor':
-        newVersion.major = lastVersion!.major
-        newVersion.minor = lastVersion!.minor + 1
+        newVersion.major = lastVersion?.major ?? 0
+        newVersion.minor =
+          lastVersion && lastVersion.minor ? lastVersion.minor + 1 : 1
         newVersion.patch = 0
         break
       case 'major':
-        newVersion.major = lastVersion!.major + 1
+        newVersion.major =
+          lastVersion && lastVersion.major ? lastVersion.major + 1 : 1
         newVersion.minor = 0
         newVersion.patch = 0
         break
@@ -171,14 +160,18 @@ export async function createNewCandidateVersion(
   }
 
   if (isLastVersionCandidate(gitTags)) {
-    if (lastVersion![releaseType] < lastCandidate![releaseType]) {
-      // console.log("updating release candidate")
-      newVersion.major = lastCandidate!.major
-      newVersion.minor = lastCandidate!.minor
-      newVersion.patch = lastCandidate!.patch
-      newVersion.candidate = lastCandidate!.candidate! + 1
+    if (
+      lastVersion &&
+      lastCandidate &&
+      lastVersion[releaseType] < lastCandidate[releaseType]
+    ) {
+      newVersion.major = lastCandidate?.major ?? 0
+      newVersion.minor = lastCandidate?.minor ?? 0
+      newVersion.patch = lastCandidate?.patch ?? 0
+      newVersion.candidate = lastCandidate.candidate
+        ? lastCandidate.candidate + 1
+        : 1
     } else {
-      // console.log("creating new version from last version")
       createVersionFromLastVersion()
     }
   } else {
@@ -188,15 +181,15 @@ export async function createNewCandidateVersion(
   return createVersionString(newVersion)
 }
 
-export async function createNewVersion(gitTags: string): Promise<string> {
+export function createNewVersion(gitTags: string): string {
   if (!isLastVersionCandidate(gitTags)) {
     return 'undefined'
   }
-  let lastReleaseCandidate = parseTagString(
-    await getLastReleaseCandidate(gitTags)
-  )
+  const lastReleaseCandidate = parseTagString(getLastReleaseCandidate(gitTags))
   if (lastReleaseCandidate?.candidate) {
     lastReleaseCandidate.candidate = undefined
   }
-  return createVersionString(lastReleaseCandidate!)
+  return createVersionString(
+    lastReleaseCandidate ?? {major: 0, minor: 0, patch: 0}
+  )
 }
