@@ -1,7 +1,7 @@
 require('./sourcemap-register.js');/******/ (() => { // webpackBootstrap
 /******/ 	var __webpack_modules__ = ({
 
-/***/ 949:
+/***/ 570:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
 "use strict";
@@ -39,12 +39,13 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.CommandRunner = void 0;
+exports.commandRunner = void 0;
 const core = __importStar(__nccwpck_require__(186));
 const exec = __importStar(__nccwpck_require__(514));
-const CommandRunner = (command, ...args) => __awaiter(void 0, void 0, void 0, function* () {
-    let output = '', errors = '';
-    let options = {};
+const commandRunner = (command, args) => __awaiter(void 0, void 0, void 0, function* () {
+    let output = '';
+    let errors = '';
+    const options = {};
     options.silent = true;
     options.listeners = {
         stdout: (data) => {
@@ -58,220 +59,19 @@ const CommandRunner = (command, ...args) => __awaiter(void 0, void 0, void 0, fu
         yield exec.exec(command, args, options);
     }
     catch (err) {
-        core.info(`The command cd '${command} ${args.join(' ')}' failed: ${err}`);
+        if (args) {
+            core.info(`The command cd '${command} ${args.join(' ')}' failed: ${err}`);
+        }
+        else {
+            core.info(`The command cd '${command}' failed: ${err}`);
+        }
     }
     if (errors !== '') {
         core.info(`stderr: ${errors}`);
     }
     return output;
 });
-exports.CommandRunner = CommandRunner;
-
-
-/***/ }),
-
-/***/ 274:
-/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
-
-"use strict";
-
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.createNewVersion = exports.createNewCandidateVersion = exports.createVersionString = exports.isLastVersionCandidate = exports.getLastReleaseCandidate = exports.getLastVersion = exports.getCommitLog = exports.parseTagString = void 0;
-const CommandRunner_1 = __nccwpck_require__(949);
-/**
- * Parses a tag string and return a SemanticVersion
- * @param tagString String containing the tag
- * @returns SemanticVersion or undefined
- */
-function parseTagString(tagString) {
-    const regEx = '^v(?<major>[0-9]+).(?<minor>[0-9]+).(?<patch>[0-9]+)(-RC(?<candidate>[0-9]+))?$';
-    const matches = tagString.match(regEx);
-    if (matches) {
-        const versionConstruct = {
-            major: 0,
-            minor: 0,
-            patch: 0
-        };
-        if (matches.groups) {
-            versionConstruct.major = Number(matches.groups['major']);
-            versionConstruct.minor = Number(matches.groups['minor']);
-            versionConstruct.patch = Number(matches.groups['patch']);
-            versionConstruct.candidate = Number(matches.groups['candidate']);
-        }
-        return versionConstruct;
-    }
-    return undefined;
-}
-exports.parseTagString = parseTagString;
-function getCommitLog() {
-    return __awaiter(this, void 0, void 0, function* () {
-        let gitVersionPromise = (0, CommandRunner_1.CommandRunner)('git log --pretty="format: %H | %D"');
-        return gitVersionPromise;
-    });
-}
-exports.getCommitLog = getCommitLog;
-/**
- * Return the last release version from a list of git tags.
- * @param gitTags String containing all git tags.
- * @returns The last release version as SemanticVersion object.
- */
-function getLastVersion(gitTags) {
-    return __awaiter(this, void 0, void 0, function* () {
-        const versionRegEx = '^v([0-9]+).([0-9]+).([0-9]+)$';
-        let lastVersion;
-        lastVersion = gitTags.split('\n').filter(line => {
-            if (line.match(versionRegEx)) {
-                return true;
-            }
-            else {
-                return false;
-            }
-        })[0];
-        return lastVersion;
-    });
-}
-exports.getLastVersion = getLastVersion;
-/**
- * Create a new release candidate based on the given tags.
- * @param gitTags String containing all git tags.
- * @returns The new release candidate as SemanticVersion object.
- */
-function getLastReleaseCandidate(gitTags) {
-    return __awaiter(this, void 0, void 0, function* () {
-        const candidateRegEx = '^v([0-9]+).([0-9]+).([0-9]+)-RC([0-9]+)$';
-        let candidateVersion;
-        candidateVersion = gitTags.split('\n').filter(line => {
-            if (line.match(candidateRegEx)) {
-                return true;
-            }
-            else {
-                return false;
-            }
-        })[0];
-        return candidateVersion;
-    });
-}
-exports.getLastReleaseCandidate = getLastReleaseCandidate;
-/**
- * Checks wether the last version tag is a release candidate or not.
- * @param gitTags String containing all git tags.
- * @returns True, if the last version tag is a release candidate.
- */
-function isLastVersionCandidate(gitTags) {
-    let regEx = '^v([0-9]+).([0-9]+).([0-9]+)(-RC([0-9]+))?$';
-    let lastVersionString = gitTags.split('\n').filter(line => {
-        if (line.match(regEx)) {
-            return true;
-        }
-    })[0];
-    if (lastVersionString != undefined && lastVersionString.includes('RC')) {
-        return true;
-    }
-    return false;
-}
-exports.isLastVersionCandidate = isLastVersionCandidate;
-/**
- * Creates a String from a SemanticVersion object
- * @param version SemanticVersion object
- * @returns String containing the version object
- */
-function createVersionString(version) {
-    let versionString = 'v' + version.major + '.' + version.minor + '.' + version.patch;
-    if (version.candidate) {
-        return versionString + '-RC' + version.candidate;
-    }
-    return versionString;
-}
-exports.createVersionString = createVersionString;
-/**
- * Creates a new release candidate based on the given git tags and the version level to increase.
- * @param releaseType Defines, what version level to increase, 'major', 'minor' or 'patch'
- * @param gitTags String containing all git tags.
- * @returns
- */
-function createNewCandidateVersion(releaseType, gitTags) {
-    return __awaiter(this, void 0, void 0, function* () {
-        let lastVersionString = yield getLastVersion(gitTags);
-        // core.info('last version string found in git tags: ' + lastVersionString)
-        // console.log('last version string found in git tags: ' + lastVersionString)
-        if (!lastVersionString) {
-            lastVersionString = 'v0.0.1';
-        }
-        let lastCandidateString = yield getLastReleaseCandidate(gitTags);
-        // core.info('last release candidate found: ' + lastCandidateString)
-        // console.log('last release candidate found: ' + lastCandidateString)
-        if (!lastCandidateString) {
-            lastCandidateString = 'v0.0.1-RC1';
-        }
-        const lastVersion = parseTagString(lastVersionString);
-        const lastCandidate = parseTagString(lastCandidateString);
-        let newVersion = {
-            major: 0,
-            minor: 0,
-            patch: 1
-        };
-        function createVersionFromLastVersion() {
-            switch (releaseType) {
-                case 'patch':
-                    newVersion.major = lastVersion.major;
-                    newVersion.minor = lastVersion.minor;
-                    newVersion.patch = lastVersion.patch + 1;
-                    break;
-                case 'minor':
-                    newVersion.major = lastVersion.major;
-                    newVersion.minor = lastVersion.minor + 1;
-                    newVersion.patch = 0;
-                    break;
-                case 'major':
-                    newVersion.major = lastVersion.major + 1;
-                    newVersion.minor = 0;
-                    newVersion.patch = 0;
-                    break;
-            }
-            newVersion.candidate = 1;
-        }
-        if (isLastVersionCandidate(gitTags)) {
-            if (lastVersion[releaseType] < lastCandidate[releaseType]) {
-                // console.log("updating release candidate")
-                newVersion.major = lastCandidate.major;
-                newVersion.minor = lastCandidate.minor;
-                newVersion.patch = lastCandidate.patch;
-                newVersion.candidate = lastCandidate.candidate + 1;
-            }
-            else {
-                // console.log("creating new version from last version")
-                createVersionFromLastVersion();
-            }
-        }
-        else {
-            createVersionFromLastVersion();
-        }
-        return createVersionString(newVersion);
-    });
-}
-exports.createNewCandidateVersion = createNewCandidateVersion;
-function createNewVersion(gitTags) {
-    return __awaiter(this, void 0, void 0, function* () {
-        if (!isLastVersionCandidate(gitTags)) {
-            return 'undefined';
-        }
-        let lastReleaseCandidate = parseTagString(yield getLastReleaseCandidate(gitTags));
-        if (lastReleaseCandidate === null || lastReleaseCandidate === void 0 ? void 0 : lastReleaseCandidate.candidate) {
-            lastReleaseCandidate.candidate = undefined;
-        }
-        return createVersionString(lastReleaseCandidate);
-    });
-}
-exports.createNewVersion = createNewVersion;
+exports.commandRunner = commandRunner;
 
 
 /***/ }),
@@ -316,27 +116,28 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.performRelease = void 0;
 const core = __importStar(__nccwpck_require__(186));
-const CommandRunner_1 = __nccwpck_require__(949);
-const VersionProvider_1 = __nccwpck_require__(274);
+const command_runner_1 = __nccwpck_require__(570);
+const utilities_1 = __nccwpck_require__(587);
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
-        core.info("starting versioning action....");
+        core.info('starting versioning action....');
         // don't delete these, yet, maybe, we need them in the main.ts later...
-        const gitTags = yield (0, CommandRunner_1.CommandRunner)('git tag --list --sort=-version:refname');
+        const gitTags = yield (0, command_runner_1.commandRunner)('git tag --list --sort=-version:refname');
         // const gitTags = await CommandRunner('git tag --list --sort=-committerdate')
         // core.debug('I found following git tags: ' + gitTags)
         // core.info('I found following git tags: ' + gitTags)
-        let currentDir = yield (0, CommandRunner_1.CommandRunner)("pwd");
+        // let currentDir = await commandRunner('pwd')
         // core.info('current directory: ' + currentDir)
         // const newVersionString = createNewCandidateVersion('patch', gitTags)
         try {
             const releaseType = core.getInput('releaseType');
             const newVersion = yield performRelease(releaseType, gitTags);
-            core.info("new version string: " + newVersion);
-            if (newVersion == 'undefined') {
+            core.info('new version string: ${newVersion}');
+            if (newVersion === 'undefined') {
                 core.setFailed("Couldn't create release!");
             }
             core.setOutput('newVersion', newVersion);
+            core.exportVariable('NEW_VERSION', newVersion);
         }
         catch (error) {
             if (error instanceof Error)
@@ -347,15 +148,202 @@ function run() {
 function performRelease(releaseType, gitTags) {
     return __awaiter(this, void 0, void 0, function* () {
         if (releaseType === 'release') {
-            return (0, VersionProvider_1.createNewVersion)(gitTags);
+            return (0, utilities_1.createNewVersion)(gitTags);
         }
         else {
-            return (0, VersionProvider_1.createNewCandidateVersion)(releaseType, gitTags);
+            return (0, utilities_1.createNewCandidateVersion)(releaseType, gitTags);
         }
     });
 }
 exports.performRelease = performRelease;
 run();
+
+
+/***/ }),
+
+/***/ 587:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.createNewVersion = exports.createNewCandidateVersion = exports.createVersionString = exports.isLastVersionCandidate = exports.getLastReleaseCandidate = exports.getLastVersion = exports.getCommitLog = exports.parseTagString = void 0;
+const command_runner_1 = __nccwpck_require__(570);
+/**
+ * Parses a tag string and return a SemanticVersion
+ * @param tagString String containing the tag
+ * @returns SemanticVersion or undefined
+ */
+function parseTagString(tagString) {
+    const regEx = '^v(?<major>[0-9]+).(?<minor>[0-9]+).(?<patch>[0-9]+)(-RC(?<candidate>[0-9]+))?$';
+    const matches = tagString.match(regEx);
+    if (matches) {
+        const versionConstruct = {
+            major: 0,
+            minor: 0,
+            patch: 0
+        };
+        if (matches.groups) {
+            versionConstruct.major = Number(matches.groups['major']);
+            versionConstruct.minor = Number(matches.groups['minor']);
+            versionConstruct.patch = Number(matches.groups['patch']);
+            versionConstruct.candidate = Number(matches.groups['candidate']);
+        }
+        return versionConstruct;
+    }
+    return undefined;
+}
+exports.parseTagString = parseTagString;
+function getCommitLog() {
+    return __awaiter(this, void 0, void 0, function* () {
+        const gitVersionPromise = (0, command_runner_1.commandRunner)('git log --pretty="format: %H | %D"');
+        return gitVersionPromise;
+    });
+}
+exports.getCommitLog = getCommitLog;
+/**
+ * Return the last release version from a list of git tags.
+ * @param gitTags String containing all git tags.
+ * @returns The last release version as SemanticVersion object.
+ */
+function getLastVersion(gitTags) {
+    const versionRegEx = '^v([0-9]+).([0-9]+).([0-9]+)$';
+    const lastVersion = gitTags
+        .split('\n')
+        .filter(line => line.match(versionRegEx))[0];
+    return lastVersion;
+}
+exports.getLastVersion = getLastVersion;
+/**
+ * Create a new release candidate based on the given tags.
+ * @param gitTags String containing all git tags.
+ * @returns The new release candidate as SemanticVersion object.
+ */
+function getLastReleaseCandidate(gitTags) {
+    const candidateRegEx = '^v([0-9]+).([0-9]+).([0-9]+)-RC([0-9]+)$';
+    const candidateVersion = gitTags
+        .split('\n')
+        .filter(line => line.match(candidateRegEx))[0];
+    return candidateVersion;
+}
+exports.getLastReleaseCandidate = getLastReleaseCandidate;
+/**
+ * Checks wether the last version tag is a release candidate or not.
+ * @param gitTags String containing all git tags.
+ * @returns True, if the last version tag is a release candidate.
+ */
+function isLastVersionCandidate(gitTags) {
+    const regEx = '^v([0-9]+).([0-9]+).([0-9]+)(-RC([0-9]+))?$';
+    const lastVersionString = gitTags
+        .split('\n')
+        .filter(line => line.match(regEx))[0];
+    if (lastVersionString !== undefined && lastVersionString.includes('RC')) {
+        return true;
+    }
+    return false;
+}
+exports.isLastVersionCandidate = isLastVersionCandidate;
+/**
+ * Creates a String from a SemanticVersion object
+ * @param version SemanticVersion object
+ * @returns String containing the version object
+ */
+function createVersionString(version) {
+    const versionString = 'v'.concat(String(version.major), '.', String(version.minor), '.', String(version.patch));
+    if (version.candidate) {
+        return ''.concat(versionString, '-RC', String(version.candidate));
+    }
+    return versionString;
+}
+exports.createVersionString = createVersionString;
+/**
+ * Creates a new release candidate based on the given git tags and the version level to increase.
+ * @param releaseType Defines, what version level to increase, 'major', 'minor' or 'patch'
+ * @param gitTags String containing all git tags.
+ * @returns
+ */
+function createNewCandidateVersion(releaseType, gitTags) {
+    var _a, _b, _c;
+    let lastVersionString = getLastVersion(gitTags);
+    if (!lastVersionString) {
+        lastVersionString = 'v0.0.1';
+    }
+    let lastCandidateString = getLastReleaseCandidate(gitTags);
+    if (!lastCandidateString) {
+        lastCandidateString = 'v0.0.1-RC1';
+    }
+    const lastVersion = parseTagString(lastVersionString);
+    const lastCandidate = parseTagString(lastCandidateString);
+    const newVersion = {
+        major: 0,
+        minor: 0,
+        patch: 1
+    };
+    function createVersionFromLastVersion() {
+        var _a, _b, _c;
+        switch (releaseType) {
+            case 'patch':
+                newVersion.major = (_a = lastVersion === null || lastVersion === void 0 ? void 0 : lastVersion.major) !== null && _a !== void 0 ? _a : 0;
+                newVersion.minor = (_b = lastVersion === null || lastVersion === void 0 ? void 0 : lastVersion.minor) !== null && _b !== void 0 ? _b : 0;
+                newVersion.patch =
+                    lastVersion && lastVersion.patch ? lastVersion.patch + 1 : 1;
+                break;
+            case 'minor':
+                newVersion.major = (_c = lastVersion === null || lastVersion === void 0 ? void 0 : lastVersion.major) !== null && _c !== void 0 ? _c : 0;
+                newVersion.minor =
+                    lastVersion && lastVersion.minor ? lastVersion.minor + 1 : 1;
+                newVersion.patch = 0;
+                break;
+            case 'major':
+                newVersion.major =
+                    lastVersion && lastVersion.major ? lastVersion.major + 1 : 1;
+                newVersion.minor = 0;
+                newVersion.patch = 0;
+                break;
+        }
+        newVersion.candidate = 1;
+    }
+    if (isLastVersionCandidate(gitTags)) {
+        if (lastVersion &&
+            lastCandidate &&
+            lastVersion[releaseType] < lastCandidate[releaseType]) {
+            newVersion.major = (_a = lastCandidate === null || lastCandidate === void 0 ? void 0 : lastCandidate.major) !== null && _a !== void 0 ? _a : 0;
+            newVersion.minor = (_b = lastCandidate === null || lastCandidate === void 0 ? void 0 : lastCandidate.minor) !== null && _b !== void 0 ? _b : 0;
+            newVersion.patch = (_c = lastCandidate === null || lastCandidate === void 0 ? void 0 : lastCandidate.patch) !== null && _c !== void 0 ? _c : 0;
+            newVersion.candidate = lastCandidate.candidate
+                ? lastCandidate.candidate + 1
+                : 1;
+        }
+        else {
+            createVersionFromLastVersion();
+        }
+    }
+    else {
+        createVersionFromLastVersion();
+    }
+    return createVersionString(newVersion);
+}
+exports.createNewCandidateVersion = createNewCandidateVersion;
+function createNewVersion(gitTags) {
+    if (!isLastVersionCandidate(gitTags)) {
+        return 'undefined';
+    }
+    const lastReleaseCandidate = parseTagString(getLastReleaseCandidate(gitTags));
+    if (lastReleaseCandidate === null || lastReleaseCandidate === void 0 ? void 0 : lastReleaseCandidate.candidate) {
+        lastReleaseCandidate.candidate = undefined;
+    }
+    return createVersionString(lastReleaseCandidate !== null && lastReleaseCandidate !== void 0 ? lastReleaseCandidate : { major: 0, minor: 0, patch: 0 });
+}
+exports.createNewVersion = createNewVersion;
 
 
 /***/ }),
@@ -528,13 +516,9 @@ function exportVariable(name, val) {
     process.env[name] = convertedVal;
     const filePath = process.env['GITHUB_ENV'] || '';
     if (filePath) {
-        const delimiter = '_GitHubActionsFileCommandDelimeter_';
-        const commandValue = `${name}<<${delimiter}${os.EOL}${convertedVal}${os.EOL}${delimiter}`;
-        file_command_1.issueCommand('ENV', commandValue);
+        return file_command_1.issueFileCommand('ENV', file_command_1.prepareKeyValueMessage(name, val));
     }
-    else {
-        command_1.issueCommand('set-env', { name }, convertedVal);
-    }
+    command_1.issueCommand('set-env', { name }, convertedVal);
 }
 exports.exportVariable = exportVariable;
 /**
@@ -552,7 +536,7 @@ exports.setSecret = setSecret;
 function addPath(inputPath) {
     const filePath = process.env['GITHUB_PATH'] || '';
     if (filePath) {
-        file_command_1.issueCommand('PATH', inputPath);
+        file_command_1.issueFileCommand('PATH', inputPath);
     }
     else {
         command_1.issueCommand('add-path', {}, inputPath);
@@ -592,7 +576,10 @@ function getMultilineInput(name, options) {
     const inputs = getInput(name, options)
         .split('\n')
         .filter(x => x !== '');
-    return inputs;
+    if (options && options.trimWhitespace === false) {
+        return inputs;
+    }
+    return inputs.map(input => input.trim());
 }
 exports.getMultilineInput = getMultilineInput;
 /**
@@ -625,8 +612,12 @@ exports.getBooleanInput = getBooleanInput;
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function setOutput(name, value) {
+    const filePath = process.env['GITHUB_OUTPUT'] || '';
+    if (filePath) {
+        return file_command_1.issueFileCommand('OUTPUT', file_command_1.prepareKeyValueMessage(name, value));
+    }
     process.stdout.write(os.EOL);
-    command_1.issueCommand('set-output', { name }, value);
+    command_1.issueCommand('set-output', { name }, utils_1.toCommandValue(value));
 }
 exports.setOutput = setOutput;
 /**
@@ -755,7 +746,11 @@ exports.group = group;
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function saveState(name, value) {
-    command_1.issueCommand('save-state', { name }, value);
+    const filePath = process.env['GITHUB_STATE'] || '';
+    if (filePath) {
+        return file_command_1.issueFileCommand('STATE', file_command_1.prepareKeyValueMessage(name, value));
+    }
+    command_1.issueCommand('save-state', { name }, utils_1.toCommandValue(value));
 }
 exports.saveState = saveState;
 /**
@@ -821,13 +816,14 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.issueCommand = void 0;
+exports.prepareKeyValueMessage = exports.issueFileCommand = void 0;
 // We use any as a valid input type
 /* eslint-disable @typescript-eslint/no-explicit-any */
 const fs = __importStar(__nccwpck_require__(147));
 const os = __importStar(__nccwpck_require__(37));
+const uuid_1 = __nccwpck_require__(840);
 const utils_1 = __nccwpck_require__(278);
-function issueCommand(command, message) {
+function issueFileCommand(command, message) {
     const filePath = process.env[`GITHUB_${command}`];
     if (!filePath) {
         throw new Error(`Unable to find environment variable for file command ${command}`);
@@ -839,7 +835,22 @@ function issueCommand(command, message) {
         encoding: 'utf8'
     });
 }
-exports.issueCommand = issueCommand;
+exports.issueFileCommand = issueFileCommand;
+function prepareKeyValueMessage(key, value) {
+    const delimiter = `ghadelimiter_${uuid_1.v4()}`;
+    const convertedValue = utils_1.toCommandValue(value);
+    // These should realistically never happen, but just in case someone finds a
+    // way to exploit uuid generation let's not allow keys or values that contain
+    // the delimiter.
+    if (key.includes(delimiter)) {
+        throw new Error(`Unexpected input: name should not contain the delimiter "${delimiter}"`);
+    }
+    if (convertedValue.includes(delimiter)) {
+        throw new Error(`Unexpected input: value should not contain the delimiter "${delimiter}"`);
+    }
+    return `${key}<<${delimiter}${os.EOL}${convertedValue}${os.EOL}${delimiter}`;
+}
+exports.prepareKeyValueMessage = prepareKeyValueMessage;
 //# sourceMappingURL=file-command.js.map
 
 /***/ }),
@@ -3645,6 +3656,652 @@ exports.debug = debug; // for test
 
 /***/ }),
 
+/***/ 840:
+/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", ({
+  value: true
+}));
+Object.defineProperty(exports, "v1", ({
+  enumerable: true,
+  get: function () {
+    return _v.default;
+  }
+}));
+Object.defineProperty(exports, "v3", ({
+  enumerable: true,
+  get: function () {
+    return _v2.default;
+  }
+}));
+Object.defineProperty(exports, "v4", ({
+  enumerable: true,
+  get: function () {
+    return _v3.default;
+  }
+}));
+Object.defineProperty(exports, "v5", ({
+  enumerable: true,
+  get: function () {
+    return _v4.default;
+  }
+}));
+Object.defineProperty(exports, "NIL", ({
+  enumerable: true,
+  get: function () {
+    return _nil.default;
+  }
+}));
+Object.defineProperty(exports, "version", ({
+  enumerable: true,
+  get: function () {
+    return _version.default;
+  }
+}));
+Object.defineProperty(exports, "validate", ({
+  enumerable: true,
+  get: function () {
+    return _validate.default;
+  }
+}));
+Object.defineProperty(exports, "stringify", ({
+  enumerable: true,
+  get: function () {
+    return _stringify.default;
+  }
+}));
+Object.defineProperty(exports, "parse", ({
+  enumerable: true,
+  get: function () {
+    return _parse.default;
+  }
+}));
+
+var _v = _interopRequireDefault(__nccwpck_require__(628));
+
+var _v2 = _interopRequireDefault(__nccwpck_require__(409));
+
+var _v3 = _interopRequireDefault(__nccwpck_require__(122));
+
+var _v4 = _interopRequireDefault(__nccwpck_require__(120));
+
+var _nil = _interopRequireDefault(__nccwpck_require__(332));
+
+var _version = _interopRequireDefault(__nccwpck_require__(595));
+
+var _validate = _interopRequireDefault(__nccwpck_require__(900));
+
+var _stringify = _interopRequireDefault(__nccwpck_require__(950));
+
+var _parse = _interopRequireDefault(__nccwpck_require__(746));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+/***/ }),
+
+/***/ 569:
+/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", ({
+  value: true
+}));
+exports["default"] = void 0;
+
+var _crypto = _interopRequireDefault(__nccwpck_require__(113));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function md5(bytes) {
+  if (Array.isArray(bytes)) {
+    bytes = Buffer.from(bytes);
+  } else if (typeof bytes === 'string') {
+    bytes = Buffer.from(bytes, 'utf8');
+  }
+
+  return _crypto.default.createHash('md5').update(bytes).digest();
+}
+
+var _default = md5;
+exports["default"] = _default;
+
+/***/ }),
+
+/***/ 332:
+/***/ ((__unused_webpack_module, exports) => {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", ({
+  value: true
+}));
+exports["default"] = void 0;
+var _default = '00000000-0000-0000-0000-000000000000';
+exports["default"] = _default;
+
+/***/ }),
+
+/***/ 746:
+/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", ({
+  value: true
+}));
+exports["default"] = void 0;
+
+var _validate = _interopRequireDefault(__nccwpck_require__(900));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function parse(uuid) {
+  if (!(0, _validate.default)(uuid)) {
+    throw TypeError('Invalid UUID');
+  }
+
+  let v;
+  const arr = new Uint8Array(16); // Parse ########-....-....-....-............
+
+  arr[0] = (v = parseInt(uuid.slice(0, 8), 16)) >>> 24;
+  arr[1] = v >>> 16 & 0xff;
+  arr[2] = v >>> 8 & 0xff;
+  arr[3] = v & 0xff; // Parse ........-####-....-....-............
+
+  arr[4] = (v = parseInt(uuid.slice(9, 13), 16)) >>> 8;
+  arr[5] = v & 0xff; // Parse ........-....-####-....-............
+
+  arr[6] = (v = parseInt(uuid.slice(14, 18), 16)) >>> 8;
+  arr[7] = v & 0xff; // Parse ........-....-....-####-............
+
+  arr[8] = (v = parseInt(uuid.slice(19, 23), 16)) >>> 8;
+  arr[9] = v & 0xff; // Parse ........-....-....-....-############
+  // (Use "/" to avoid 32-bit truncation when bit-shifting high-order bytes)
+
+  arr[10] = (v = parseInt(uuid.slice(24, 36), 16)) / 0x10000000000 & 0xff;
+  arr[11] = v / 0x100000000 & 0xff;
+  arr[12] = v >>> 24 & 0xff;
+  arr[13] = v >>> 16 & 0xff;
+  arr[14] = v >>> 8 & 0xff;
+  arr[15] = v & 0xff;
+  return arr;
+}
+
+var _default = parse;
+exports["default"] = _default;
+
+/***/ }),
+
+/***/ 814:
+/***/ ((__unused_webpack_module, exports) => {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", ({
+  value: true
+}));
+exports["default"] = void 0;
+var _default = /^(?:[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}|00000000-0000-0000-0000-000000000000)$/i;
+exports["default"] = _default;
+
+/***/ }),
+
+/***/ 807:
+/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", ({
+  value: true
+}));
+exports["default"] = rng;
+
+var _crypto = _interopRequireDefault(__nccwpck_require__(113));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+const rnds8Pool = new Uint8Array(256); // # of random values to pre-allocate
+
+let poolPtr = rnds8Pool.length;
+
+function rng() {
+  if (poolPtr > rnds8Pool.length - 16) {
+    _crypto.default.randomFillSync(rnds8Pool);
+
+    poolPtr = 0;
+  }
+
+  return rnds8Pool.slice(poolPtr, poolPtr += 16);
+}
+
+/***/ }),
+
+/***/ 274:
+/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", ({
+  value: true
+}));
+exports["default"] = void 0;
+
+var _crypto = _interopRequireDefault(__nccwpck_require__(113));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function sha1(bytes) {
+  if (Array.isArray(bytes)) {
+    bytes = Buffer.from(bytes);
+  } else if (typeof bytes === 'string') {
+    bytes = Buffer.from(bytes, 'utf8');
+  }
+
+  return _crypto.default.createHash('sha1').update(bytes).digest();
+}
+
+var _default = sha1;
+exports["default"] = _default;
+
+/***/ }),
+
+/***/ 950:
+/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", ({
+  value: true
+}));
+exports["default"] = void 0;
+
+var _validate = _interopRequireDefault(__nccwpck_require__(900));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+/**
+ * Convert array of 16 byte values to UUID string format of the form:
+ * XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX
+ */
+const byteToHex = [];
+
+for (let i = 0; i < 256; ++i) {
+  byteToHex.push((i + 0x100).toString(16).substr(1));
+}
+
+function stringify(arr, offset = 0) {
+  // Note: Be careful editing this code!  It's been tuned for performance
+  // and works in ways you may not expect. See https://github.com/uuidjs/uuid/pull/434
+  const uuid = (byteToHex[arr[offset + 0]] + byteToHex[arr[offset + 1]] + byteToHex[arr[offset + 2]] + byteToHex[arr[offset + 3]] + '-' + byteToHex[arr[offset + 4]] + byteToHex[arr[offset + 5]] + '-' + byteToHex[arr[offset + 6]] + byteToHex[arr[offset + 7]] + '-' + byteToHex[arr[offset + 8]] + byteToHex[arr[offset + 9]] + '-' + byteToHex[arr[offset + 10]] + byteToHex[arr[offset + 11]] + byteToHex[arr[offset + 12]] + byteToHex[arr[offset + 13]] + byteToHex[arr[offset + 14]] + byteToHex[arr[offset + 15]]).toLowerCase(); // Consistency check for valid UUID.  If this throws, it's likely due to one
+  // of the following:
+  // - One or more input array values don't map to a hex octet (leading to
+  // "undefined" in the uuid)
+  // - Invalid input values for the RFC `version` or `variant` fields
+
+  if (!(0, _validate.default)(uuid)) {
+    throw TypeError('Stringified UUID is invalid');
+  }
+
+  return uuid;
+}
+
+var _default = stringify;
+exports["default"] = _default;
+
+/***/ }),
+
+/***/ 628:
+/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", ({
+  value: true
+}));
+exports["default"] = void 0;
+
+var _rng = _interopRequireDefault(__nccwpck_require__(807));
+
+var _stringify = _interopRequireDefault(__nccwpck_require__(950));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+// **`v1()` - Generate time-based UUID**
+//
+// Inspired by https://github.com/LiosK/UUID.js
+// and http://docs.python.org/library/uuid.html
+let _nodeId;
+
+let _clockseq; // Previous uuid creation time
+
+
+let _lastMSecs = 0;
+let _lastNSecs = 0; // See https://github.com/uuidjs/uuid for API details
+
+function v1(options, buf, offset) {
+  let i = buf && offset || 0;
+  const b = buf || new Array(16);
+  options = options || {};
+  let node = options.node || _nodeId;
+  let clockseq = options.clockseq !== undefined ? options.clockseq : _clockseq; // node and clockseq need to be initialized to random values if they're not
+  // specified.  We do this lazily to minimize issues related to insufficient
+  // system entropy.  See #189
+
+  if (node == null || clockseq == null) {
+    const seedBytes = options.random || (options.rng || _rng.default)();
+
+    if (node == null) {
+      // Per 4.5, create and 48-bit node id, (47 random bits + multicast bit = 1)
+      node = _nodeId = [seedBytes[0] | 0x01, seedBytes[1], seedBytes[2], seedBytes[3], seedBytes[4], seedBytes[5]];
+    }
+
+    if (clockseq == null) {
+      // Per 4.2.2, randomize (14 bit) clockseq
+      clockseq = _clockseq = (seedBytes[6] << 8 | seedBytes[7]) & 0x3fff;
+    }
+  } // UUID timestamps are 100 nano-second units since the Gregorian epoch,
+  // (1582-10-15 00:00).  JSNumbers aren't precise enough for this, so
+  // time is handled internally as 'msecs' (integer milliseconds) and 'nsecs'
+  // (100-nanoseconds offset from msecs) since unix epoch, 1970-01-01 00:00.
+
+
+  let msecs = options.msecs !== undefined ? options.msecs : Date.now(); // Per 4.2.1.2, use count of uuid's generated during the current clock
+  // cycle to simulate higher resolution clock
+
+  let nsecs = options.nsecs !== undefined ? options.nsecs : _lastNSecs + 1; // Time since last uuid creation (in msecs)
+
+  const dt = msecs - _lastMSecs + (nsecs - _lastNSecs) / 10000; // Per 4.2.1.2, Bump clockseq on clock regression
+
+  if (dt < 0 && options.clockseq === undefined) {
+    clockseq = clockseq + 1 & 0x3fff;
+  } // Reset nsecs if clock regresses (new clockseq) or we've moved onto a new
+  // time interval
+
+
+  if ((dt < 0 || msecs > _lastMSecs) && options.nsecs === undefined) {
+    nsecs = 0;
+  } // Per 4.2.1.2 Throw error if too many uuids are requested
+
+
+  if (nsecs >= 10000) {
+    throw new Error("uuid.v1(): Can't create more than 10M uuids/sec");
+  }
+
+  _lastMSecs = msecs;
+  _lastNSecs = nsecs;
+  _clockseq = clockseq; // Per 4.1.4 - Convert from unix epoch to Gregorian epoch
+
+  msecs += 12219292800000; // `time_low`
+
+  const tl = ((msecs & 0xfffffff) * 10000 + nsecs) % 0x100000000;
+  b[i++] = tl >>> 24 & 0xff;
+  b[i++] = tl >>> 16 & 0xff;
+  b[i++] = tl >>> 8 & 0xff;
+  b[i++] = tl & 0xff; // `time_mid`
+
+  const tmh = msecs / 0x100000000 * 10000 & 0xfffffff;
+  b[i++] = tmh >>> 8 & 0xff;
+  b[i++] = tmh & 0xff; // `time_high_and_version`
+
+  b[i++] = tmh >>> 24 & 0xf | 0x10; // include version
+
+  b[i++] = tmh >>> 16 & 0xff; // `clock_seq_hi_and_reserved` (Per 4.2.2 - include variant)
+
+  b[i++] = clockseq >>> 8 | 0x80; // `clock_seq_low`
+
+  b[i++] = clockseq & 0xff; // `node`
+
+  for (let n = 0; n < 6; ++n) {
+    b[i + n] = node[n];
+  }
+
+  return buf || (0, _stringify.default)(b);
+}
+
+var _default = v1;
+exports["default"] = _default;
+
+/***/ }),
+
+/***/ 409:
+/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", ({
+  value: true
+}));
+exports["default"] = void 0;
+
+var _v = _interopRequireDefault(__nccwpck_require__(998));
+
+var _md = _interopRequireDefault(__nccwpck_require__(569));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+const v3 = (0, _v.default)('v3', 0x30, _md.default);
+var _default = v3;
+exports["default"] = _default;
+
+/***/ }),
+
+/***/ 998:
+/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", ({
+  value: true
+}));
+exports["default"] = _default;
+exports.URL = exports.DNS = void 0;
+
+var _stringify = _interopRequireDefault(__nccwpck_require__(950));
+
+var _parse = _interopRequireDefault(__nccwpck_require__(746));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function stringToBytes(str) {
+  str = unescape(encodeURIComponent(str)); // UTF8 escape
+
+  const bytes = [];
+
+  for (let i = 0; i < str.length; ++i) {
+    bytes.push(str.charCodeAt(i));
+  }
+
+  return bytes;
+}
+
+const DNS = '6ba7b810-9dad-11d1-80b4-00c04fd430c8';
+exports.DNS = DNS;
+const URL = '6ba7b811-9dad-11d1-80b4-00c04fd430c8';
+exports.URL = URL;
+
+function _default(name, version, hashfunc) {
+  function generateUUID(value, namespace, buf, offset) {
+    if (typeof value === 'string') {
+      value = stringToBytes(value);
+    }
+
+    if (typeof namespace === 'string') {
+      namespace = (0, _parse.default)(namespace);
+    }
+
+    if (namespace.length !== 16) {
+      throw TypeError('Namespace must be array-like (16 iterable integer values, 0-255)');
+    } // Compute hash of namespace and value, Per 4.3
+    // Future: Use spread syntax when supported on all platforms, e.g. `bytes =
+    // hashfunc([...namespace, ... value])`
+
+
+    let bytes = new Uint8Array(16 + value.length);
+    bytes.set(namespace);
+    bytes.set(value, namespace.length);
+    bytes = hashfunc(bytes);
+    bytes[6] = bytes[6] & 0x0f | version;
+    bytes[8] = bytes[8] & 0x3f | 0x80;
+
+    if (buf) {
+      offset = offset || 0;
+
+      for (let i = 0; i < 16; ++i) {
+        buf[offset + i] = bytes[i];
+      }
+
+      return buf;
+    }
+
+    return (0, _stringify.default)(bytes);
+  } // Function#name is not settable on some platforms (#270)
+
+
+  try {
+    generateUUID.name = name; // eslint-disable-next-line no-empty
+  } catch (err) {} // For CommonJS default export support
+
+
+  generateUUID.DNS = DNS;
+  generateUUID.URL = URL;
+  return generateUUID;
+}
+
+/***/ }),
+
+/***/ 122:
+/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", ({
+  value: true
+}));
+exports["default"] = void 0;
+
+var _rng = _interopRequireDefault(__nccwpck_require__(807));
+
+var _stringify = _interopRequireDefault(__nccwpck_require__(950));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function v4(options, buf, offset) {
+  options = options || {};
+
+  const rnds = options.random || (options.rng || _rng.default)(); // Per 4.4, set bits for version and `clock_seq_hi_and_reserved`
+
+
+  rnds[6] = rnds[6] & 0x0f | 0x40;
+  rnds[8] = rnds[8] & 0x3f | 0x80; // Copy bytes to buffer, if provided
+
+  if (buf) {
+    offset = offset || 0;
+
+    for (let i = 0; i < 16; ++i) {
+      buf[offset + i] = rnds[i];
+    }
+
+    return buf;
+  }
+
+  return (0, _stringify.default)(rnds);
+}
+
+var _default = v4;
+exports["default"] = _default;
+
+/***/ }),
+
+/***/ 120:
+/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", ({
+  value: true
+}));
+exports["default"] = void 0;
+
+var _v = _interopRequireDefault(__nccwpck_require__(998));
+
+var _sha = _interopRequireDefault(__nccwpck_require__(274));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+const v5 = (0, _v.default)('v5', 0x50, _sha.default);
+var _default = v5;
+exports["default"] = _default;
+
+/***/ }),
+
+/***/ 900:
+/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", ({
+  value: true
+}));
+exports["default"] = void 0;
+
+var _regex = _interopRequireDefault(__nccwpck_require__(814));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function validate(uuid) {
+  return typeof uuid === 'string' && _regex.default.test(uuid);
+}
+
+var _default = validate;
+exports["default"] = _default;
+
+/***/ }),
+
+/***/ 595:
+/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", ({
+  value: true
+}));
+exports["default"] = void 0;
+
+var _validate = _interopRequireDefault(__nccwpck_require__(900));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function version(uuid) {
+  if (!(0, _validate.default)(uuid)) {
+    throw TypeError('Invalid UUID');
+  }
+
+  return parseInt(uuid.substr(14, 1), 16);
+}
+
+var _default = version;
+exports["default"] = _default;
+
+/***/ }),
+
 /***/ 491:
 /***/ ((module) => {
 
@@ -3658,6 +4315,14 @@ module.exports = require("assert");
 
 "use strict";
 module.exports = require("child_process");
+
+/***/ }),
+
+/***/ 113:
+/***/ ((module) => {
+
+"use strict";
+module.exports = require("crypto");
 
 /***/ }),
 

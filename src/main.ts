@@ -25,6 +25,7 @@ async function run(): Promise<void> {
       core.setFailed("Couldn't create release!")
     }
     core.setOutput('newVersion', newVersion)
+    core.exportVariable('NEW_VERSION', newVersion)
   } catch (error) {
     if (error instanceof Error) core.setFailed(error.message)
   }
